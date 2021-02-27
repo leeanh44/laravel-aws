@@ -10,27 +10,41 @@
     {
       "name": "nginx-proxy-conf",
       "host": {
-        "sourcePath": "/var/app/current/proxy/conf.d"
+        "sourcePath": "/var/app/current/docker/nginx/prod/conf.d"
       }
-    }  
+    },
+    {
+      "name": "supervisord-conf",
+      "host": {
+        "sourcePath": "/var/app/current/docker/app/supervisord-php-app.ini"
+      }
+    }
   ],
   "containerDefinitions": [
     {
       "name": "php-app",
-      "image": "php:fpm",
+      "image": "AWS_ACCOUNT_ID.dkr.ecr.AWS_DEFAULT_REGION.amazonaws.com/DOCKER_IMAGE_NAME:DOCKER_IMAGE_VERSION",
       "essential": true,
-      "memory": 128,
+      "memory": 256,
       "mountPoints": [
         {
           "sourceVolume": "php-app",
-          "containerPath": "/var/www/html",
+          "containerPath": "/var/www/html"
+        },
+        {
+          "sourceVolume": "awseb-logs-php-app",
+          "containerPath": "/var/log/php-app"
+        },
+        {
+          "sourceVolume": "supervisord-conf",
+          "containerPath": "/etc/supervisor.d/supervisord.ini",
           "readOnly": true
         }
       ]
     },
     {
       "name": "nginx-proxy",
-      "image": "nginx",
+      "image": "nginx:1.19.2-alpine",
       "essential": true,
       "memory": 128,
       "portMappings": [
@@ -45,8 +59,7 @@
       "mountPoints": [
         {
           "sourceVolume": "php-app",
-          "containerPath": "/var/www/html",
-          "readOnly": true
+          "containerPath": "/var/www/html"
         },
         {
           "sourceVolume": "awseb-logs-nginx-proxy",
